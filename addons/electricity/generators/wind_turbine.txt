@@ -1,0 +1,64 @@
+@name addons/electricity/Generators/Wind turbine
+@inputs 
+@outputs Watts
+@persist I Spin Ang AngTar
+@strict
+@model models/hunter/blocks/cube150x150x025.mdl
+
+if(first()){
+    propSpawnUndo(0)
+    enableConstraintUndo(0)
+    E=entity()
+    E:setName("Basic Wind turbine")
+    E:noCollideAll(0)
+    if(!E:isConstrained()){
+        E:weld(world())
+    }
+    E:setMaterial("phoenix_storms/concrete1")
+    Beam=propSpawn("models/props_docks/dock03_pole01a.mdl",E:toWorld(vec()),E:angles(),1)
+    Beam:parentTo(E)
+    
+    
+    
+    holoCreate(0,E:toWorld(vec(0,0,(Beam:boxSize():z()/2)+14.5)))
+    holoParent(0,E)
+    holoAlpha(0,0)
+    Part1=propSpawn("models/props_wasteland/laundry_basket001.mdl",Beam:toWorld(vec(0,-2.5,(Beam:boxSize():z()/2)+20)),E:toWorld(ang(-90,180,0)),1)
+    Part1:parentTo(holoEntity(0))
+    Shaft=propSpawn("models/props_c17/signpole001.mdl",E:toWorld(vec(-20,0,(Beam:boxSize():z()/2)+14.5)),E:toWorld(ang(0,90,90)),1)
+    
+    holoCreate(1,E:toWorld(vec(-20,0,(Beam:boxSize():z()/2)+14.5)))
+    holoParent(1,holoEntity(0))
+    holoAlpha(1,0)
+    Shaft:parentTo(holoEntity(1))
+    Proppeler=propSpawn("models/props_citizen_tech/windmill_blade004a.mdl",Shaft:toWorld(vec(0,5.5,90)),E:toWorld(ang()),1)
+    Proppeler:parentTo(Shaft)
+    Part2=propSpawn("models/props_c17/trappropeller_engine.mdl",Beam:toWorld(vec(0,-2.5,(Beam:boxSize():z()/2)+20)),E:toWorld(ang(-90,180,0)),1)
+    Part2:parentTo(Part1)
+    Part3=propSpawn("models/props_trainstation/trainstation_ornament002.mdl",Shaft:toWorld(vec(0,0,100)),E:toWorld(ang(-90,180,0)),1)
+    Part3:parentTo(Shaft)
+    Part4=propSpawn("models/items/car_battery01.mdl",E:toWorld(vec(-20,20,10)),E:toWorld(ang(0,0,0)),1)
+    Part4:parentTo(E)
+    rope(1,Part1,vec(0,0,-22),Part4,vec(-5,-6.5,3),500,2,"")
+    runOnTick(1)
+    timer("ChaneAng",2000)
+    Proppeler:emitSound("ambient/wind/wind_rooftop1.wav",70,50)
+    Watts=25
+}
+
+
+
+if(clk("ChaneAng")){AngTar=AngTar+randint(-20,20),timer("ChaneAng",randint(10000,120000)),Watts=random(20,30),Watts=round(Watts,1)}
+if(Ang>AngTar){
+    Ang-=1
+}
+if(Ang<AngTar){
+    Ang+=1
+}
+holoAng(1,holoAng(1)+ang(0,0,-0.5))
+holoAng(0,holoAng(0)+ang(0,(AngTar-Part1:angles():yaw())/250,0))
+
+
+event removed(Resetting:number) {
+    Proppeler:emitSoundStop("ambient/wind/wind_rooftop1.wav")
+}

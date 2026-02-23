@@ -1,0 +1,16 @@
+@name addons/electricity/Logic stuff/Splitter
+@inputs Input
+@outputs Out
+@persist 
+@strict
+@model models/hunter/blocks/cube075x075x025.mdl
+enableConstraintUndo(0)
+entity():noCollideAll(0)
+entity():setMaterial("phoenix_storms/wire/pcb_green")
+if(!entity():isConstrained()){
+    entity():weld(world())
+}
+
+if(changed(Input)){
+    Out=Input
+}

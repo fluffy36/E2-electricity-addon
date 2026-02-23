@@ -1,0 +1,14 @@
+@name addons/electricity/Batteries/100Watt battery
+@inputs Terminal1
+@outputs Watts
+@persist 
+@strict
+@model models/items/car_battery01.mdl
+interval(200)
+if(Terminal1>0){
+    Watts+=1
+}
+if(Terminal1==0){
+    Watts-=0.5
+}
+Watts=clamp(Watts,0,100)

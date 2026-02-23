@@ -1,0 +1,6 @@
+@name addons/electricity/Machines/Furnace
+@inputs 
+@outputs 
+@persist 
+@strict
+
