@@ -1,0 +1,31 @@
+@name addons/electricity/Generators/Medium solar panel
+@inputs 
+@outputs Watts
+@persist 
+@strict
+@model models/props_c17/substation_transformer01b.mdl
+
+if(first()){
+    propSpawnUndo(0)
+    enableConstraintUndo(0)
+    E=entity()
+    E:setName("Medium solar panel")
+    E:noCollideAll(0)
+    if(E:isConstrained()){
+        E:constraintBreak()
+    }
+    runOnTick(1)
+}
+        rangerFilter(E)
+Ranger=rangerOffset(99999,E:pos(),sunDirection())
+
+if(changed(Ranger:hitSky())&Ranger:hitSky()){
+    E:emitSound("ambient/machines/thumper_startup1.wav")
+    E:setColor(vec(255/1.5,255,255/1.5))
+    Watts=75
+}
+if(changed(Ranger:hitSky())&!Ranger:hitSky()){
+    E:emitSound("ambient/machines/thumper_shutdown1.wav")
+    E:setColor(vec(255,255/1.5,255/1.5))
+    Watts=0
+}

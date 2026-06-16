@@ -1,0 +1,91 @@
+@name addons/electricity/generators/Gasoline generator
+@inputs 
+@outputs Watts Fuel
+@persist 
+@strict
+
+if(first()){
+    propSpawnUndo(0)
+    entity():setAlpha(255)
+    runOnTick(1)
+    Prop = propSpawn("models/props_mining/diesel_generator.mdl",entity():toWorld(vec(0,0,50)),ang(),0)
+    Prop:propFreeze(0)
+    holoCreate(1,Prop:toWorld(vec(-70,-9.3,44.75)),vec(1),Prop:toWorld(ang()))
+    holoAlpha(1,0)
+    holoParent(1,Prop)
+    Crank = propSpawn("models/props_mining/diesel_generator_crank.mdl",holoPos(1),holoAng(1),1)
+    Crank:noCollideAll(1)
+    Crank:parentTo(holoEntity(1))
+    Crank
+    
+    Watts=0
+    trackCollision(Prop)
+    IsOn=0
+    Fuel=0
+    CrankUsed=0
+    IsPressingCrank=_NO_ENTITY
+}
+
+event entityCollision(Entity:entity, HitEntity:entity, CollisionData:collision) {
+    if(!HitEntity:isWorld() & HitEntity:isValid() & HitEntity:model() == "models/props_junk/gascan001a.mdl"&!timerExists("HasRan?")){
+        timer("HasRan?",0.001,1,function(){HitEntity:propDelete()})
+        Fuel += 50
+        Fuel=clamp(Fuel,0,100)
+    }
+}
+
+event tick() {
+    
+    if(changed(IsOn)){
+        if(IsOn){
+            Prop:emitSound("ambient/machines/sputter1.wav")
+            Prop:emitSound("ambient/machines/diesel_engine_idle1.wav")
+        }else{
+            Prop:emitSoundStop("ambient/machines/diesel_engine_idle1.wav")
+            Prop:emitSound("ambient/machines/spindown.wav")
+        }
+    }
+    if(IsOn){
+        Fuel-=0.01
+        Watts+=(120-Watts)/8
+    }else{
+        Watts=0
+    }
+    if(CrankUsed){
+        holoAng(1,holoAng(1)+ang(0,0,10))
+    }else{
+        
+    }
+    if(Fuel<=0){
+        IsOn=0
+    }
+}
+
+event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
+    #print(Key)
+    if((Player:aimEntity()==Crank|IsPressingCrank==Player)&Key=="e"){
+        if(Down==1){
+            IsPressingCrank = Player
+            
+            C=Fuel>0
+            timer("Wait",2,C,function(){
+                if(Fuel>0){
+                    IsOn=1
+                }else{
+                    Prop:emitSound("ambient/machines/sputter1.wav",75,randint(90,110))
+                }
+            })
+            CrankUsed=1
+        }else{
+            IsPressingCrank=_NO_ENTITY
+            timerStop("Wait")
+            CrankUsed=0
+        }
+    }
+}
+
+event entityRemoved(Entity:entity) {
+    if(Entity==entity()){
+        Prop:emitSoundStop("ambient/machines/diesel_engine_idle1.wav")
+    }
+}

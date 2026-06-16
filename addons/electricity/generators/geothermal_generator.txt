@@ -1,0 +1,74 @@
+@name addons/electricity/Generators/Geothermal generator
+@inputs 
+@outputs Watts
+@persist IsTouchingGround
+@strict
+@model models/props_outland/generator_static01a.mdl
+
+if(first()){
+    propSpawnUndo(0)
+    enableConstraintUndo(0)
+    E=entity()
+    E:setName("Geothermal generator")
+    E:noCollideAll(0)
+    if(E:isConstrained()){
+        E:constraintBreak()
+    }
+    runOnTick(1)
+    
+    holoCreate(1,E:toWorld(vec(20,-20,50)))
+    holoDisableShading(1,1)
+    holoColor(1,vec(255,0,0))
+    holoScale(1,vec(0.3))
+    holoParent(1,E)
+    holoCreate(2,E:toWorld(vec(0,0,4)))
+    holoAng(2,E:angles())
+    holoScale(2,vec(0.1,0.1,1))
+    holoColor(2,vec(255/2))
+    holoParent(2,E)
+    timer("ChangeWatt",2000)
+}
+        rangerFilter(E)
+Ranger=rangerOffset(2,E:pos(),(E:toWorld(vec(0,0,-1))-E:pos()))
+if(changed(Ranger:entity())&Ranger:entity():isWorld()){
+    E:emitSound("ambient/machines/thumper_top.wav")
+    E:emitSound("ambient/machines/thumper_amb.wav")
+    IsTouchingGround=1
+    holoColor(1,vec(0,255,0))
+}
+if(changed(Ranger:entity())&Ranger:entity():isValid()){
+    if(Ranger:entity():isPlayer()){
+        if(Ranger:entity():hasPermission("damage")){
+            E:emitSound("ambient/machines/slicer1.wav")
+            E:emitSound("ambient/machines/thumper_amb.wav")
+            IsTouchingGround=-1
+            holoColor(1,vec(0,255,0))
+        }
+        
+    }
+}
+if(changed(Ranger:hit())&!Ranger:hit()&(IsTouchingGround==1|IsTouchingGround==-1)){
+    E:emitSoundStop("ambient/machines/thumper_amb.wav")
+    E:emitSound("ambient/machines/thumper_shutdown1.wav")
+    IsTouchingGround=0
+    holoColor(1,vec(255,0,0))
+}
+
+if(changed(IsTouchingGround)&IsTouchingGround==-1){
+    timer("Damage",1000)
+}
+if(changed(IsTouchingGround)&IsTouchingGround==0){
+    timerStop("Damage")
+}
+if(clk("Damage")){
+    if(Ranger:entity():hasPermission("damage")){
+        Ranger:entity():takeDamage(100)
+        E:emitSound("ambient/machines/slicer"+randint(1,4)+".wav")
+        timer("Damage",1000)
+    }
+}
+
+if(clk("ChangeWatt")){
+    Watts=randint(25,150)
+    timer("ChangeWatt",randint(5000,20000))
+}
